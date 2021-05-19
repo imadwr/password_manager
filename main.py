@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import random
+import json
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
 
@@ -12,8 +13,6 @@ def generate_password():
     nr_letters = random.randint(8, 10)
     nr_symbols = random.randint(2, 4)
     nr_numbers = random.randint(2, 4)
-
-    password_list = []
 
     password_letters = [random.choice(letters) for _ in range(nr_letters)]
 
@@ -39,20 +38,32 @@ def save():
     website = website_input.get()
     username = username_input.get()
     password = password_input.get()
-    line = f"{website} | {username} | {password}\n"
+    new_data = {
+        website: {
+            "email": username,
+            "password": password,
+        }
+    }
 
     if len(website) == 0 or len(username) == 0 or len(password) == 0:
         messagebox.showwarning(title="Empty fields", message="You should not leave the fields empty!")
     else:
-        save_ok = messagebox.askokcancel(title=website, message=f"These are the details entred: \nEmail: {username} \n"
-                                                        f"Password: {password} \nwould you like to save?")
+        try:
+            with open("data.json", "r") as data_file:
+                data = json.load(data_file)
+                print(data)
+                data.update(new_data)
 
-        if save_ok:
-            with open("data.txt", mode="a") as file:
-                file.writelines(line)
-            website_input.delete(0, END)
-            password_input.delete(0, END)
-            website_input.focus()
+            with open("data.json", "w") as data_file:
+                json.dump(data, data_file, indent=4)
+
+        except FileNotFoundError:
+            with open("data.json", "w") as data_file:
+                json.dump(new_data, data_file, indent=4)
+
+        website_input.delete(0, END)
+        password_input.delete(0, END)
+        website_input.focus()
 
 
 # ---------------------------- UI SETUP ------------------------------- #
